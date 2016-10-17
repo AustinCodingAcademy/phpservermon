@@ -1,6 +1,5 @@
 .idea/*
 /nbproject
-/config.php
 /build
 /docs/_build
 /vendor/
