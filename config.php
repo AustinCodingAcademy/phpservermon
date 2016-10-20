@@ -4,3 +4,4 @@ define('PSM_DB_NAME', getenv('PSM_DB_NAME'));
 define('PSM_DB_USER', getenv('PSM_DB_USER'));
 define('PSM_DB_PASS', getenv('PSM_DB_PASS'));
 define('PSM_DB_PREFIX', 'psm_');
+define('PSM_BASE_URL', getenv('PSM_BASE_URL'));
