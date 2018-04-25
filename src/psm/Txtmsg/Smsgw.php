@@ -18,36 +18,44 @@
  * along with PHP Server Monitor.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package     phpservermon
- * @author      Pepijn Over <pep@mailbox.org>
+ * @author      Daif Alotaibi <daif@daif.net>
  * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
- * @since       phpservermon 3.2
  **/
 
-namespace psm\Module\User\EventListener;
+namespace psm\Txtmsg;
 
-use psm\Module\User\UserEvents;
-use psm\Module\User\Event\UserEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+class Smsgw extends Core {
 
-class UserSubscriber implements EventSubscriberInterface {
+    /**
+     * Send a text message to one or more recipients
+     *
+     * @param string $message
+     * @return boolean
+     */
 
-	public static function getSubscribedEvents() {
-		return array(
-			UserEvents::USER_ADD => array('onUserAdd', 0),
-			UserEvents::USER_EDIT => array('onUserEdit', 0),
-			UserEvents::USER_DELETE => array('onUserDelete', 0),
-		);
-	}
+    public function sendSMS($message) {
+        $url  = 'http://api.smsgw.net/SendBulkSMS';
+        $post = array(
+            'strUserName' => $this->username, 
+            'strPassword' => $this->password,
+            'strTagName'  => $this->originator,
+            'strRecepientNumbers'  => implode(';', $this->recipients),
+            'strMessage'  => $message,
+        );
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HEADER, FALSE);
+        curl_setopt($ch, CURLOPT_POST, TRUE);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        $data = curl_exec($ch);
+        if($data == '1') {
+            $this->success = true;
+        }
+        return $this->success;
+    }
 
-	public function onUserAdd(UserEvent $event) {
-	}
-
-	public function onUserEdit(UserEvent $event) {
-	}
-
-	public function onUserDelete(UserEvent $event) {
-	}
 }
