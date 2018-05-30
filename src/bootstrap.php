@@ -18,8 +18,8 @@
  * along with PHP Server Monitor.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package     phpservermon
- * @author      Pepijn Over <pep@peplab.net>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @author      Pepijn Over <pep@mailbox.org>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -30,6 +30,7 @@
 define('PSM_PATH_SRC', __DIR__ . DIRECTORY_SEPARATOR);
 define('PSM_PATH_CONFIG', PSM_PATH_SRC . 'config' . DIRECTORY_SEPARATOR);
 define('PSM_PATH_LANG', PSM_PATH_SRC . 'lang' . DIRECTORY_SEPARATOR);
+define('PSM_PATH_SMS_GATEWAY', PSM_PATH_SRC . 'psm' . DIRECTORY_SEPARATOR . 'Txtmsg' . DIRECTORY_SEPARATOR);
 
 // user levels
 define('PSM_USER_ADMIN', 10);

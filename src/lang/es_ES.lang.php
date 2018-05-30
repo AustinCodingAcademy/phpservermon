@@ -21,7 +21,7 @@
  * @author      Klemens Häckel <http://clickdimension.wordpress.com/>
  * @author      Luis Rodriguez <luis@techreanimate.com>
  * @author 		Mauro Vietri <mauro.vietri@outlook.com>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -62,6 +62,18 @@ $sm_lang = array(
 		'a_minute_ago' => 'Hace aproximadamente un minuto',
 		'seconds_ago' => 'Hace %d segundos',
 		'a_second_ago' => 'Hace aproximadamente un segundo',
+		'year' => 'year',
+		'years' => 'years',
+		'month' => 'month',
+		'months' => 'months',
+		'day' => 'day',
+		'days' => 'days',
+		'hour' => 'hour',
+		'hours' => 'hours',
+		'minute' => 'minute',
+		'minutes' => 'minutes',
+		'second' => 'second',
+		'seconds' => 'seconds',
 	),
 	'menu' => array(
 		'config' => 'Configurar',
@@ -98,7 +110,7 @@ $sm_lang = array(
 		'profile' => 'Perfil',
 		'profile_updated' => 'Su perfil ha sido actualizado.',
 		'error_user_name_bad_length' => 'Los nombres de usuario deben tener entre 2 y 64 caracteres.',
-		'error_user_name_invalid' => 'El nombre de usuario sólo puede contener caracteres alfabéticos (az, AZ), números (0-9) y guiones bajos (_).',
+		'error_user_name_invalid' => 'El nombre de usuario sólo puede contener caracteres alfabéticos (a-z, A-Z), números (0-9), puntos (.) y guiones bajos (_).',
 		'error_user_name_exists' => 'El nombre de usuario dado ya existe en la base de datos.',
 		'error_user_email_bad_length' => 'Direcciones de correo electrónico deben estar entre 5 y 255 caracteres.',
 		'error_user_email_invalid' => 'La dirección de correo electrónico no es válida.',
@@ -114,7 +126,10 @@ $sm_lang = array(
 		'email' => 'Email',
 		'sms' => 'SMS',
 		'pushover' => 'Pushover',
-		'no_logs' => 'No hay registros',
+		'no_logs' => 'No hay journaux',
+		'clear' => 'Borrar registro',
+		'delete_title' => 'Eliminar registro',
+		'delete_message' => '¿Estás seguro de que quieres eliminar <b>todos</b> los registros?',
 	),
 	'servers' => array(
 		'server' => 'Servidores',
@@ -131,6 +146,7 @@ $sm_lang = array(
 		'pattern_description' => 'Si este patrón no se encuentra en el sitio web, el servidor estará marcada como sin conexión. Se permiten expresiones regulares.',
 		'last_check' => 'Última verificación',
 		'last_online' => 'Última vez en línea',
+		'last_offline' => 'Last offline',
 		'monitoring' => 'Monitoreo',
 		'no_monitoring' => 'Sin monitoreo',
 		'email' => 'Email',
@@ -191,21 +207,8 @@ $sm_lang = array(
 		'email_smtp_noauth' => 'Deja en blanco para ninguna autenticación',
 		'sms_status' => '¿Habilitar envio de SMS?',
 		'sms_gateway' => 'Proveedor de SMS',
-		'sms_gateway_mosms' => 'Mosms',
-		'sms_gateway_mollie' => 'Mollie',
-		'sms_gateway_spryng' => 'Spryng',
-		'sms_gateway_inetworx' => 'Inetworx',
-		'sms_gateway_clickatell' => 'Clickatell',
-        	'sms_gateway_textmarketer' => 'Textmarketer',
-		'sms_gateway_smsglobal' => 'SMSGlobal',
-		'sms_gateway_octopush' => 'Octopush',
-		'sms_gateway_smsit' => 'Smsit',
-		'sms_gateway_freevoipdeal' => 'FreeVoipDeal',
 		'sms_gateway_username' => 'Usuario',
 		'sms_gateway_password' => 'Contraseña',
-		'sms_gateway_nexmo' => 'Nexmo',
-		'sms_gateway_username' => 'Gateway username',
-		'sms_gateway_password' => 'Gateway password',
 		'sms_from' => 'Número origen del SMS',
 		'pushover_status' => '¿Habilitar el envío de mensajes Pushover?',
 		'pushover_description' => 'Pushover es un servicio que hace que sea fácil de obtener notificaciones en tiempo real. Vea <a href="https://pushover.net/"> su página web </a> para más información.',
@@ -255,7 +258,7 @@ $sm_lang = array(
 		'email_sent' => 'Email enviado',
 		'email_error' => 'Error al enviar el email',
 		'sms_sent' => 'SMS enviado',
-		'sms_error' => 'Error al enviar el SMS',
+		'sms_error' => 'Error al enviar el SMS. %s',
 		'sms_error_nomobile' => 'No se puede enviar SMS de prueba: no hay ningún número de teléfono válido en su perfil.',
 		'pushover_sent' => 'Notificación Pushover enviada',
 		'pushover_error' => 'Error al enviar la notificación Pushover: %s',

@@ -19,7 +19,7 @@
  *
  * @package     phpservermon
  * @author      Matej Kovacic <https://github.com/MatejKovacic>
- * @copyright   Copyright (c) 2008-2014 Pepijn Over <pep@neanderthal-technology.com>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -94,7 +94,7 @@ $sm_lang = array(
         'profile' => 'Profil',
         'profile_updated' => 'Vaš profil je bil posodobljen.',
         'error_user_name_bad_length' => 'Uporabniško ime mora biti dolgo med 2 in 64 znakov.',
-        'error_user_name_invalid' => 'Uporabniško ime lahko vsebuje samo črke (a-z, A-Z), številke (0-9) in podčrtaje (_).',
+        'error_user_name_invalid' => 'Uporabniško ime lahko vsebuje samo črke (a-z, A-Z), številke (0-9), pike (.) in podčrtaje (_).',
         'error_user_name_exists' => 'Uporabniško ime v bazi podatkov že obstaja.',
         'error_user_email_bad_length' => 'E-naslov mora biti med 5 in 255 znaki.',
         'error_user_email_invalid' => 'E-naslov ni veljaven.',
@@ -111,6 +111,9 @@ $sm_lang = array(
         'sms' => 'SMS',
         'pushover' => 'Pushover',
         'no_logs' => 'ni dnevniških zapisov',
+        'clear' => 'Počisti dnevnik',
+    		'delete_title' => 'Brisanje dnevnika',
+    		'delete_message' => 'Ali ste prepričani, da želite izbrisati <b>vse</b> dnevnike?',
     ),
     'servers' => array(
         'server' => 'Strežnik',
@@ -187,14 +190,6 @@ $sm_lang = array(
         'email_smtp_noauth' => 'Če ni potrebna overovitev, pustite prazno',
         'sms_status' => 'Dovolim pošiljanje SMS sporočil?',
         'sms_gateway' => 'Prehod za pošiljanje SMS sporočil',
-        'sms_gateway_mosms' => 'Mosms',
-        'sms_gateway_mollie' => 'Mollie',
-        'sms_gateway_spryng' => 'Spryng',
-        'sms_gateway_inetworx' => 'Inetworx',
-        'sms_gateway_clickatell' => 'Clickatell',
-        'sms_gateway_textmarketer' => 'Textmarketer',
-        'sms_gateway_smsglobal' => 'SMSGlobal',
-        'sms_gateway_smsit' => 'Smsit',
         'sms_gateway_username' => 'Uporabniško ime SMS prehoda',
         'sms_gateway_password' => 'Geslo SMS prehoda',
         'sms_from' => 'Telefonska številka pošiljatelja',
@@ -246,7 +241,7 @@ $sm_lang = array(
         'email_sent' => 'E-pošta poslana',
         'email_error' => 'Napaka pri pošiljanju e-pošte',
         'sms_sent' => 'SMS sporočilo poslano',
-        'sms_error' => 'Napaka pri pošiljanju SMS sporočila',
+        'sms_error' => 'Napaka pri pošiljanju SMS sporočila. %s',
         'sms_error_nomobile' => 'Ni mogoče poslati testnega SMS sporočila: v vašem profilu ni vpisana veljavna telefonska številka.',
         'pushover_sent' => 'Pushover obvestilo poslano',
         'pushover_error' => 'Napaka pri pošiljanju Pushover sporočila: %s',

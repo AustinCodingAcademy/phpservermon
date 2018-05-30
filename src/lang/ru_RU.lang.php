@@ -19,7 +19,7 @@
  *
  * @package     phpservermon
  * @author      Roman Beylin <roman.beylin@yandex.ru>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -60,6 +60,18 @@ $sm_lang = array(
 		'a_minute_ago' => 'минуту назад',
 		'seconds_ago' => '%d секунд назад',
 		'a_second_ago' => 'секунду назад',
+		'year' => 'year',
+		'years' => 'years',
+		'month' => 'month',
+		'months' => 'months',
+		'day' => 'day',
+		'days' => 'days',
+		'hour' => 'hour',
+		'hours' => 'hours',
+		'minute' => 'minute',
+		'minutes' => 'minutes',
+		'second' => 'second',
+		'seconds' => 'seconds',
 	),
 	'menu' => array(
 		'config' => 'Параметры',
@@ -96,7 +108,7 @@ $sm_lang = array(
 		'profile' => 'Профиль',
 		'profile_updated' => 'Ваш профиль был обновлен.',
 		'error_user_name_bad_length' => 'Логин должен содержать от 2 до 64 знаков.',
-		'error_user_name_invalid' => 'Имя пользователя может содержать только латинские символы (a-z, A-Z), цифры (0-9) и подчеркивание (_).',
+		'error_user_name_invalid' => 'Имя пользователя может содержать только латинские символы (a-z, A-Z), цифры (0-9), точки (.) и подчеркивание (_).',
 		'error_user_name_exists' => 'Данный логин уже существует.',
 		'error_user_email_bad_length' => 'E-mail может содержать от 5 до 255 знаков.',
 		'error_user_email_invalid' => 'E-mail указан неверно.',
@@ -113,6 +125,9 @@ $sm_lang = array(
 		'sms' => 'SMS',
 		'pushover' => 'Pushover',
 		'no_logs' => 'Записей нет',
+		'clear' => 'Clear log',
+		'delete_title' => 'Delete log',
+		'delete_message' => 'Are you sure you want to delete <b>all</b> logs?',
 	),
 	'servers' => array(
 		'server' => 'Сервер',
@@ -129,6 +144,7 @@ $sm_lang = array(
 		'pattern_description' => 'Если текст по шаблону не найден на сайте, сервер будет помечен как Оффлайн. Регулярные выражения допустимы.',
 		'last_check' => 'Последняя проверка',
 		'last_online' => 'Был онлайн',
+		'last_offline' => 'Last offline',
 		'monitoring' => 'Мониторинг',
 		'no_monitoring' => 'Нет мониторинга',
 		'email' => 'E-mail',
@@ -189,17 +205,6 @@ $sm_lang = array(
 		'email_smtp_noauth' => 'Оставить пустым, если без аутентификации',
 		'sms_status' => 'Разрешить отправку SMS',
 		'sms_gateway' => 'Шлюз для отправки SMS',
-		'sms_gateway_mosms' => 'Mosms',
-		'sms_gateway_mollie' => 'Mollie',
-		'sms_gateway_spryng' => 'Spryng',
-		'sms_gateway_inetworx' => 'Inetworx',
-		'sms_gateway_clickatell' => 'Clickatell',
-        'sms_gateway_textmarketer' => 'Textmarketer',
-		'sms_gateway_smsglobal' => 'SMSGlobal',
-		'sms_gateway_octopush' => 'Octopush',
-		'sms_gateway_smsit' => 'Smsit',
-		'sms_gateway_freevoipdeal' => 'FreeVoipDeal',
-		'sms_gateway_nexmo' => 'Nexmo',
 		'sms_gateway_username' => 'Пользователь',
 		'sms_gateway_password' => 'Пароль',
 		'sms_from' => 'Номер отправителя',
@@ -251,7 +256,7 @@ $sm_lang = array(
 		'email_sent' => 'Сообщение отправлено',
 		'email_error' => 'Ошибка при отправке сообщения',
 		'sms_sent' => 'SMS отправлено',
-		'sms_error' => 'Ошибка при отправке SMS',
+		'sms_error' => 'Ошибка при отправке SMS. %s',
 		'sms_error_nomobile' => 'Не удалось отправить пробный SMS: действительный телефонный номер не был найден в вашем профиле.',
 		'pushover_sent' => 'Pushover уведомление отправлено',
 		'pushover_error' => 'Произошла ошибка во время отправки Pushover уведомления: %s',

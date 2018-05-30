@@ -20,7 +20,7 @@
  * @package     phpservermon
  * @author      Simon Berka <berka@berkasimon.com>
  * @author      Pavel Laupe Dvorak <pavel@pavel-dvorak.cz>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -61,6 +61,18 @@ $sm_lang = array(
 		'a_minute_ago' => 'cca před minutou',
 		'seconds_ago' => 'před %d vteřinami',
 		'a_second_ago' => 'před chvílí',
+		'year' => 'year',
+		'years' => 'years',
+		'month' => 'month',
+		'months' => 'months',
+		'day' => 'day',
+		'days' => 'days',
+		'hour' => 'hour',
+		'hours' => 'hours',
+		'minute' => 'minute',
+		'minutes' => 'minutes',
+		'second' => 'second',
+		'seconds' => 'seconds',
 	),
 	'menu' => array(
 		'config' => 'Konfigurace',
@@ -97,7 +109,7 @@ $sm_lang = array(
 		'profile' => 'Profil',
 		'profile_updated' => 'Váš uživatelský profil byl upraven.',
 		'error_user_name_bad_length' => 'Uživatelské jméno musí obsahovat 2 až 64 znaků.',
-		'error_user_name_invalid' => 'Uživatelské jméno může obsahovat pouze písmena (a-z, A-Z), čísla (0-9) a podtržítka (_).',
+		'error_user_name_invalid' => 'Uživatelské jméno může obsahovat pouze písmena (a-z, A-Z), čísla (0-9), tečky (.) a podtržítka (_).',
 		'error_user_name_exists' => 'Zadané uživatelské jméno již existuje v databázi.',
 		'error_user_email_bad_length' => 'E-mailová adresa musí obsahovat 5 až 255 znaků .',
 		'error_user_email_invalid' => 'E-mailová adresa je neplatná',
@@ -114,6 +126,9 @@ $sm_lang = array(
 		'sms' => 'SMS',
 		'pushover' => 'Pushover',
 		'no_logs' => 'Žádné záznamy',
+		'clear' => 'Jasný protokol',
+		'delete_title' => 'Odstranit protokol',
+		'delete_message' => 'Opravdu chcete odstranit protokoly <b>všechny</b>?',
 	),
 	'servers' => array(
 		'server' => 'Server',
@@ -140,6 +155,7 @@ $sm_lang = array(
 		'pattern_description' => 'Pokud vzorek nebude na webu nalezen, bude server označen jako offline. Regulární výrazy jsou povoleny.',
 		'last_check' => 'Poslední kontrola',
 		'last_online' => 'Naposledy online',
+		'last_offline' => 'Naposledy offline',
 		'monitoring' => 'Monitoring',
 		'no_monitoring' => 'Žádné monitorované služby',
 		'email' => 'E-mail',
@@ -202,19 +218,6 @@ $sm_lang = array(
 		'email_smtp_noauth' => 'Ponechte prázdné pro použití SMTP bez hesla',
 		'sms_status' => 'Povolit odesílání textových zpráv',
 		'sms_gateway' => 'Brána použitá pro odesílání zpráv',
-		'sms_gateway_mosms' => 'Mosms',
-		'sms_gateway_mollie' => 'Mollie',
-		'sms_gateway_spryng' => 'Spryng',
-		'sms_gateway_inetworx' => 'Inetworx',
-		'sms_gateway_clickatell' => 'Clickatell',
-        	'sms_gateway_textmarketer' => 'Textmarketer',
-		'sms_gateway_smsglobal' => 'SMSGlobal',
-		'sms_gateway_octopush' => 'Octopush',
-		'sms_gateway_smsit' => 'Smsit',
-		'sms_gateway_freevoipdeal' => 'FreeVoipDeal',
-		'sms_gateway_freemobilesms' => 'FreeMobileSMS',
-		'sms_gateway_clicksend' => 'ClickSend',
-		'sms_gateway_nexmo' => 'Nexmo',
 		'sms_gateway_username' => 'Uživatelské jméno brány',
 		'sms_gateway_password' => 'Heslo brány',
 		'sms_from' => 'Telefonní číslo odesilatele',
@@ -264,7 +267,7 @@ $sm_lang = array(
 		'email_sent' => 'E-mail odeslán',
 		'email_error' => 'Chyba při odeslání e-mailu',
 		'sms_sent' => 'SMS odeslána',
-		'sms_error' => 'Chyba při odeslání SMS',
+		'sms_error' => 'Chyba při odeslání SMS. %s',
 		'sms_error_nomobile' => 'Nebylo možné odeslat SMS: v uživatelském profilu nebylo nalezeno platné telefonní číslo.',
 		'pushover_sent' => 'Pushover upozornění odesláno.',
 		'pushover_error' => 'Nastala chyba při odesílání Pushover upozornění: %s',

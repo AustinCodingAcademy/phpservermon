@@ -18,8 +18,8 @@
  * along with PHP Server Monitor.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package     phpservermon
- * @author      Pepijn Over <pep@peplab.net>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @author      Pepijn Over <pep@mailbox.org>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -129,6 +129,27 @@ function psm_get_langs() {
 	}
 	ksort($langs);
 	return $langs;
+}
+
+/**
+ * Retrieve a list with available sms gateways
+ *
+ * @return array
+ */
+function psm_get_sms_gateways() {
+	$sms_gateway_files = glob(PSM_PATH_SMS_GATEWAY . '*.php');
+	$sms_gateways = array();
+
+	foreach($sms_gateway_files as $file) {
+		$name = basename($file, ".php");
+		// filter system files out
+		if($name != "Core" && $name != "TxtmsgInterface"){
+			$sms_gateways[strtolower($name)] = $name;
+		}
+	}
+
+	ksort($sms_gateways);
+	return $sms_gateways;
 }
 
 /**
@@ -279,10 +300,29 @@ function psm_log_uptime($server_id, $status, $latency) {
 }
 
 /**
+ * Converts an interval into a string
+ *
+ * @param DateInterval $interval
+ * @return string
+ */
+ function psm_format_interval(DateInterval $interval) {
+    $result = "";
+
+    if ($interval->y) { $result .= $interval->format("%y ") . ( ($interval->y == 1)  ? psm_get_lang('system', 'year') : psm_get_lang('system', 'years') ) . " "; }
+    if ($interval->m) { $result .= $interval->format("%m ") . ( ($interval->m == 1)  ? psm_get_lang('system', 'month') : psm_get_lang('system', 'months') ) . " "; }
+    if ($interval->d) { $result .= $interval->format("%d ") . ( ($interval->d == 1)  ? psm_get_lang('system', 'day') : psm_get_lang('system', 'days') ) . " "; }
+    if ($interval->h) { $result .= $interval->format("%h ") . ( ($interval->h == 1)  ? psm_get_lang('system', 'hour') : psm_get_lang('system', 'hours') ) . " "; }
+    if ($interval->i) { $result .= $interval->format("%i ") . ( ($interval->i == 1)  ? psm_get_lang('system', 'minute') : psm_get_lang('system', 'minutes') ) . " "; }
+    if ($interval->s) { $result .= $interval->format("%s ") . ( ($interval->s == 1)  ? psm_get_lang('system', 'second') : psm_get_lang('system', 'seconds') ) . " "; }
+
+    return $result;
+}
+
+/**
  * Parses a string from the language file with the correct variables replaced in the message
  *
  * @param boolean $status
- * @param string $type is either 'sms' or 'email'
+ * @param string $type is either 'sms', 'email', 'pushover_title', 'pushover_message' or 'telegram_message'
  * @param array $server information about the server which may be placed in a message: %KEY% will be replaced by your value
  * @return string parsed message
  */
@@ -334,6 +374,16 @@ function psm_curl_get($href, $header = false, $body = true, $timeout = null, $ad
     }
 
 	curl_setopt($ch, CURLOPT_URL, $href);
+
+	$proxy_url = psm_get_conf('proxy_url','');
+	if (psm_get_conf('proxy','0') === '1') {
+		curl_setopt($ch, CURLOPT_PROXY, $proxy_url);
+		$proxy_user = psm_get_conf('proxy_user','');
+		$proxy_password = psm_get_conf('proxy_password','');
+		if (!empty($proxy_user) && !empty($proxy_password)) {
+			curl_setopt($ch, CURLOPT_PROXYUSERPWD, $proxy_user . ':' . $proxy_password);
+		}
+	}
 
 	if($add_agent) {
 		curl_setopt ($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; phpservermon/'.PSM_VERSION.'; +http://www.phpservermonitor.org)');
@@ -482,6 +532,17 @@ function psm_build_pushover() {
 }
 
 /**
+ *
+ * @return \psm\Txtmsg\TxtmsgInterface
+ */
+function psm_build_telegram() {
+	$telegram = new \Telegram();
+	$telegram->setToken(psm_get_conf('telegram_api_token'));
+
+	return $telegram;
+}
+
+/**
  * Prepare a new SMS util.
  *
  * @return \psm\Txtmsg\TxtmsgInterface
@@ -490,7 +551,7 @@ function psm_build_sms() {
 	$sms = null;
 
 	// open the right class
-	// not making this any more dynamic, because perhaps some gateways need custom settings (like Mollie)
+	// not making this any more dynamic, because perhaps some gateways need custom settings
 	switch(strtolower(psm_get_conf('sms_gateway'))) {
 		case 'mosms':
 			$sms = new \psm\Txtmsg\Mosms();
@@ -501,9 +562,8 @@ function psm_build_sms() {
 		case 'inetworx':
 			$sms = new \psm\Txtmsg\Inetworx();
 			break;
-		case 'mollie':
-			$sms = new \psm\Txtmsg\Mollie();
-			$sms->setGateway(1);
+		case 'messagebird':
+			$sms = new \psm\Txtmsg\Messagebird();
 			break;
 		case 'spryng':
 			$sms = new \psm\Txtmsg\Spryng();
@@ -531,7 +591,29 @@ function psm_build_sms() {
 			break;
 		case 'octopush':
 			$sms = new \psm\Txtmsg\Octopush();
-			break;	}
+			break;
+		case 'smsgw':
+			$sms = new \psm\Txtmsg\Smsgw();
+			break;
+		case 'twilio':
+			$sms = new \psm\Txtmsg\Twilio();
+			break;
+		case 'cmbulksms':
+			$sms = new \psm\Txtmsg\CMBulkSMS();
+			break;
+		case 'gatewayapi':
+			$sms = new \psm\Txtmsg\GatewayAPI();
+			break;
+		case 'callr':
+			$sms = new \psm\Txtmsg\Callr();
+			break;
+		case 'plivo':
+			$sms = new \psm\Txtmsg\Plivo();
+			break;
+		case 'solutionsinfini':
+			$sms = new \psm\Txtmsg\SolutionsInfini();
+			break;
+	}
 
 	// copy login information from the config file
 	if($sms) {
@@ -556,9 +638,10 @@ function psm_build_url($params = array(), $urlencode = true, $htmlentities = tru
 		$url = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443 ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'];
 		// on Windows, dirname() adds both back- and forward slashes (http://php.net/dirname).
 		// for urls, we only want the forward slashes.
-		$url .= dirname($_SERVER['SCRIPT_NAME']) . '/';
+		$url .= dirname($_SERVER['SCRIPT_NAME']);
 		$url = str_replace('\\', '', $url);
 	}
+	$url = rtrim($url, '/') . '/';
 
 	if($params != null) {
 		$url .= '?';
@@ -697,7 +780,7 @@ function psm_password_decrypt($key, $encryptedString)
 
 	if (empty($key))
          throw new \InvalidArgumentException('invalid_encryption_key');
-	
+
 	$data = base64_decode($encryptedString);
 	$iv = substr($data, 0, mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC));
 
@@ -713,4 +796,50 @@ function psm_password_decrypt($key, $encryptedString)
 	);
 
 	return $decrypted;
+}
+
+/**
+* Send notification to Telegram
+*
+* @return string
+* @author Tim Zandbergen <tim@xervion.nl>
+*/
+class telegram
+{
+	private $_token;
+	private $_user;
+	private $_message;
+	private $_url;
+
+	public function setToken ($token) {
+		$this->_token = (string)$token;
+	}
+	public function setUser ($user) {
+		$this->_user = (string)$user;
+	}
+	public function setMessage ($message) {
+		$this->_message = (string)$message;
+	}
+	public function sendurl () {
+		$con = curl_init($this->_url);
+		curl_setopt($con, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($con, CURLOPT_CONNECTTIMEOUT, 5);
+		curl_setopt($con, CURLOPT_TIMEOUT, 60);
+		$response = curl_exec($con);
+		$response = json_decode($response, true);
+		return $response;
+	}
+	public function send () {
+		if(!Empty($this->_token) && !Empty($this->_user) && !Empty($this->_message)) {
+			$this->_url = 'https://api.telegram.org/bot' . urlencode($this->_token) . '/sendMessage?chat_id=' . urlencode($this->_user) . '&text=' . urlencode($this->_message);
+		}
+		return $this->sendurl();
+	}
+	// Get the bots username
+	public function getBotUsername () {
+		if(!Empty($this->_token)) {
+			$this->_url = 'https://api.telegram.org/bot' . urlencode($this->_token) . '/getMe';
+		}
+		return $this->sendurl();
+	}
 }

@@ -18,8 +18,8 @@
  * along with PHP Server Monitor.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package     phpservermon
- * @author      Pepijn Over <pep@peplab.net>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @author      Pepijn Over <pep@mailbox.org>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -82,14 +82,17 @@ class StatusUpdater {
 		$this->server = $this->db->selectRow(PSM_DB_PREFIX . 'servers', array(
 			'server_id' => $server_id,
 		), array(
-			'server_id', 'ip', 'port', 'label', 'type', 'pattern', 'status', 'active', 'warning_threshold',
-			'warning_threshold_counter', 'timeout', 'website_username', 'website_password'
+			'server_id', 'ip', 'port', 'label', 'type', 'pattern', 'pattern_online', 'header_name', 'header_value', 'status', 'active', 'warning_threshold',
+			'warning_threshold_counter', 'timeout', 'website_username', 'website_password', 'last_offline'
 		));
 		if(empty($this->server)) {
 			return false;
 		}
 
 		switch($this->server['type']) {
+			case 'ping':
+				$this->status_new = $this->updatePing($max_runs);
+				break;
 			case 'service':
 				$this->status_new = $this->updateService($max_runs);
 				break;
@@ -114,6 +117,12 @@ class StatusUpdater {
 			$save['status'] = 'on';
 			$save['last_online'] = date('Y-m-d H:i:s');
 			$save['warning_threshold_counter'] = 0;
+			if ($this->server['status'] == 'off') {
+				$online_date = new \DateTime($save['last_online']);
+				$offline_date = new \DateTime($this->server['last_offline']);
+				$difference = $online_date->diff($offline_date);
+				$save['last_offline_duration'] = trim(psm_format_interval($difference));
+			}
 		} else {
 			// server is offline, increase the error counter
 			$save['warning_threshold_counter'] = $this->server['warning_threshold_counter'] + 1;
@@ -125,6 +134,9 @@ class StatusUpdater {
 				$this->status_new = true;
 			} else {
 				$save['status'] = 'off';
+				if ($this->server['status'] == 'on') {
+					$save['last_offline'] = $save['last_check'];
+				}
 			}
 		}
 
@@ -132,6 +144,44 @@ class StatusUpdater {
 
 		return $this->status_new;
 
+	}
+
+	/**
+	 * Check the current servers ping status - Code from http://stackoverflow.com/a/20467492
+	 * @param int $max_runs
+	 * @param int $run
+	 * @return boolean
+	 */
+	protected function updatePing($max_runs, $run = 1) {
+		$errno = 0;
+		// save response time
+		$starttime = microtime(true);
+		// set ping payload
+		$package = "\x08\x00\x7d\x4b\x00\x00\x00\x00PingHost";
+
+		$socket  = socket_create(AF_INET, SOCK_RAW, 1);
+		socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 10, 'usec' => 0));
+		socket_connect($socket, $this->server['ip'], null);
+
+		socket_send($socket, $package, strLen($package), 0);
+		if (socket_read($socket, 255)) {
+			$status = true;
+		} else {
+			$status = false;
+
+			// set error  message
+			$errorcode = socket_last_error();
+			$this->error = "Couldn't create socket [".$errorcode."]: ".socket_strerror($errorcode);
+		}
+		$this->rtime =  microtime(true) - $starttime;
+		socket_close($socket);
+
+		// check if server is available and rerun if asked.
+		if(!$status && $run < $max_runs) {
+			return $this->updatePing($max_runs, $run + 1);
+		}
+
+		return $status;
 	}
 
 	/**
@@ -207,14 +257,40 @@ class StatusUpdater {
 				$result = false;
 			} else {
 				$result = true;
-				
+
 				//Okay, the HTTP status is good : 2xx or 3xx. Now we have to test the pattern if it's set up
 				if($this->server['pattern'] != '') {
-					// Check to see if the pattern was found.
-					if(!preg_match("/{$this->server['pattern']}/i", $curl_result)) {
-						$this->error = 'TEXT ERROR : Pattern not found.';
+					// Check to see if the body should not contain specified pattern
+					// Check to see if the pattern was [not] found.
+					if(($this->server['pattern_online'] == 'yes') == !preg_match("/{$this->server['pattern']}/i", $curl_result)){
+						$this->error = "TEXT ERROR : Pattern '{$this->server['pattern']}' " . 
+							($this->server['pattern_online'] == 'yes' ? 'not' : 'was') . 
+							' found.';
 						$result = false;
 					}
+				}
+
+				// Should we check a header ?
+				if($this->server['header_name'] != '' && $this->server['header_value'] != '') {
+					$header_flag = false;
+					$header_text = substr($curl_result, 0, strpos($curl_result, "\r\n\r\n")); // Only get the header text if the result also includes the body
+					foreach (explode("\r\n", $header_text) as $i => $line) {
+						if ($i === 0 || strpos($line, ':') == false) {
+							continue; // We skip the status code & other non-header lines. Needed for proxy or redirects
+						} else {
+							list ($key, $value) = explode(': ', $line);
+							if (strcasecmp($key, $this->server['header_name']) == 0) { // Header found (case-insensitive)
+								if(!preg_match("/{$this->server['header_value']}/i", $value)) { // The value doesn't match what we needed
+									$result = false;
+								} else {
+									$header_flag = true;
+									break; // No need to go further
+								}
+							}
+						}
+					}
+
+					if(!$header_flag) $result = false; // Header was not present
 				}
 			}
 		}

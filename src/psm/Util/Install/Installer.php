@@ -18,8 +18,8 @@
  * along with PHP Server Monitor.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package     phpservermon
- * @author      Pepijn Over <pep@peplab.net>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @author      Pepijn Over <pep@mailbox.org>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -78,7 +78,7 @@ class Installer {
 
 		// different DB version, check if the version requires any changes
 		// @todo this is currently a manual check for each version, similar to upgrade().. not a clean way
-		if(version_compare($version_db, '3.1.0', '<')) {
+		if(version_compare($version_db, PSM_VERSION, '<')) {
 			return true;
 		} else {
 			// change database version to current version so this check won't be required next time
@@ -126,10 +126,14 @@ class Installer {
 
 		$this->log('Populating database...');
 		$queries = array();
-		$queries[] = "INSERT INTO `" . PSM_DB_PREFIX . "servers` (`ip`, `port`, `label`, `type`, `pattern`, `status`, `error`, `rtime`, `last_online`, `last_check`, `active`, `email`, `sms`, `pushover`) VALUES ('http://sourceforge.net/index.php', 80, 'SourceForge', 'website', '', 'on', '', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'yes', 'yes', 'yes', 'yes'), ('smtp.gmail.com', 465, 'Gmail SMTP', 'service', '', 'on', '', '', '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'yes', 'yes', 'yes', 'yes')";
+		$queries[] = "INSERT INTO `" . PSM_DB_PREFIX . "servers` (`ip`, `port`, `label`, `type`, `pattern`, `pattern_online`, `status`, `rtime`, `active`, `email`, `sms`, `pushover`, `telegram`) VALUES ('http://sourceforge.net/index.php', 80, 'SourceForge', 'website', '', 'yes','on', '0.0000000', 'yes', 'yes', 'yes', 'yes', 'yes'), ('smtp.gmail.com', 465, 'Gmail SMTP', 'service', '', 'yes', 'on', '0.0000000', 'yes', 'yes', 'yes', 'yes', 'yes')";
 		$queries[] = "INSERT INTO `" . PSM_DB_PREFIX . "users_servers` (`user_id`,`server_id`) VALUES (1, 1), (1, 2);";
 		$queries[] = "INSERT INTO `" . PSM_DB_PREFIX . "config` (`key`, `value`) VALUE
 					('language', 'en_US'),
+					('proxy', '0'),
+					('proxy_url', ''),
+					('proxy_user', ''),
+					('proxy_password', ''),
 					('email_status', '1'),
 					('email_from_email', 'monitor@example.org'),
 					('email_from_name', 'Server Monitor'),
@@ -140,18 +144,21 @@ class Installer {
 					('email_smtp_username', ''),
 					('email_smtp_password', ''),
 					('sms_status', '0'),
-					('sms_gateway', 'mollie'),
+					('sms_gateway', 'messagebird'),
 					('sms_gateway_username', 'username'),
 					('sms_gateway_password', 'password'),
 					('sms_from', '1234567890'),
 					('pushover_status', '0'),
 					('pushover_api_token', ''),
+					('telegram_status', '0'),
+					('telegram_api_token', ''),
 					('password_encrypt_key', '" . sha1(microtime()) . "'),
 					('alert_type', 'status'),
 					('log_status', '1'),
 					('log_email', '1'),
 					('log_sms', '1'),
 					('log_pushover', '1'),
+					('log_telegram', '1'),
 					('log_retention_period', '365'),
 					('version', '" . PSM_VERSION . "'),
 					('version_update_check', '" . PSM_VERSION . "'),
@@ -185,6 +192,7 @@ class Installer {
 							`mobile` varchar(15) NOT NULL,
 							`pushover_key` varchar(255) NOT NULL,
 							`pushover_device` varchar(255) NOT NULL,
+							`telegram_id` varchar(255) NOT NULL,
 							`email` varchar(255) NOT NULL,
 							PRIMARY KEY (`user_id`),
 							UNIQUE KEY `unique_username` (`user_name`)
@@ -203,7 +211,7 @@ class Installer {
 			PSM_DB_PREFIX . 'log' => "CREATE TABLE `" . PSM_DB_PREFIX . "log` (
 						  `log_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 						  `server_id` int(11) unsigned NOT NULL,
-						  `type` enum('status','email','sms','pushover') NOT NULL,
+						  `type` enum('status','email','sms','pushover','telegram') NOT NULL,
 						  `message` varchar(255) NOT NULL,
 						  `datetime` timestamp NOT NULL default CURRENT_TIMESTAMP,
 						  PRIMARY KEY  (`log_id`)
@@ -218,21 +226,27 @@ class Installer {
 						  `ip` varchar(500) NOT NULL,
 						  `port` int(5) unsigned NOT NULL,
 						  `label` varchar(255) NOT NULL,
-						  `type` enum('service','website') NOT NULL default 'service',
+						  `type` enum('ping','service','website') NOT NULL default 'service',
 						  `pattern` varchar(255) NOT NULL,
+						  `pattern_online` enum('yes','no') NOT NULL default 'yes',
+						  `header_name` varchar(255) NOT NULL default '',
+						  `header_value` varchar(255) NOT NULL default '',
 						  `status` enum('on','off') NOT NULL default 'on',
 						  `error` varchar(255) NULL,
 						  `rtime` FLOAT(9, 7) NULL,
 						  `last_online` datetime NULL,
+						  `last_offline` datetime NULL,
+						  `last_offline_duration` varchar(255) NULL,
 						  `last_check` datetime NULL,
 						  `active` enum('yes','no') NOT NULL default 'yes',
 						  `email` enum('yes','no') NOT NULL default 'yes',
 						  `sms` enum('yes','no') NOT NULL default 'no',
 						  `pushover` enum('yes','no') NOT NULL default 'yes',
-                          `warning_threshold` mediumint(1) unsigned NOT NULL DEFAULT '1',
-                          `warning_threshold_counter` mediumint(1) unsigned NOT NULL DEFAULT '0',
-                          `timeout` smallint(1) unsigned NULL DEFAULT NULL,
-                          `website_username` varchar(255) DEFAULT NULL,
+						  `telegram` enum('yes','no') NOT NULL default 'yes',
+			              `warning_threshold` mediumint(1) unsigned NOT NULL DEFAULT '1',
+			              `warning_threshold_counter` mediumint(1) unsigned NOT NULL DEFAULT '0',
+			              `timeout` smallint(1) unsigned NULL DEFAULT NULL,
+			              `website_username` varchar(255) DEFAULT NULL,
 						  `website_password` varchar(255) DEFAULT NULL,
 						  PRIMARY KEY  (`server_id`)
 						) ENGINE=MyISAM  DEFAULT CHARSET=utf8;",
@@ -290,6 +304,15 @@ class Installer {
 		if(version_compare($version_from, '3.2.0', '<')) {
 			$this->upgrade320();
 		}
+		if(version_compare($version_from, '3.2.1', '<')) {
+			$this->upgrade321();
+		}
+		if(version_compare($version_from, '3.2.2', '<')) {
+			$this->upgrade322();
+		}
+		if(version_compare($version_from, '3.3.0', '<')) {
+			$this->upgrade330();
+		}
 		psm_update_conf('version', $version_to);
 	}
 
@@ -309,6 +332,8 @@ class Installer {
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` CHANGE `last_online` `last_online` DATETIME NULL;";
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` CHANGE `last_check` `last_check` DATETIME NULL;";
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `pattern` VARCHAR( 255 ) NOT NULL AFTER  `type`;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `last_offline` DATETIME NULL;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `last_offline_duration` varchar(255) NULL;";
 
 		$this->execSQL($queries);
 	}
@@ -340,6 +365,8 @@ class Installer {
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` CHANGE `server_id` `server_id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT;";
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD `warning_threshold` MEDIUMINT( 1 ) UNSIGNED NOT NULL DEFAULT '1';";
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD `warning_threshold_counter` MEDIUMINT( 1 ) UNSIGNED NOT NULL DEFAULT '0';";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `last_offline` DATETIME NULL;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `last_offline_duration` varchar(255) NULL;";
 
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "users` CHANGE `user_id` `user_id` INT( 11 ) UNSIGNED NOT NULL AUTO_INCREMENT;";
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "users`
@@ -422,6 +449,8 @@ class Installer {
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "log` CHANGE `type` `type` ENUM( 'status', 'email', 'sms', 'pushover' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;";
 
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD `timeout` smallint(1) unsigned NULL DEFAULT NULL;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `last_offline` DATETIME NULL;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `last_offline_duration` varchar(255) NULL;";
 
 		$queries[] = "CREATE TABLE IF NOT EXISTS `" . PSM_DB_PREFIX . "users_preferences` (
 						`user_id` int(11) unsigned NOT NULL,
@@ -442,6 +471,11 @@ class Installer {
 		psm_update_conf('password_encrypt_key', sha1(microtime()));
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` CHANGE `ip` `ip` VARCHAR(500) NOT NULL;";
 		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD `website_username` varchar(255) NULL, ADD `website_password` varchar(255) NULL AFTER `website_username`;";
+		$queries[] = "INSERT INTO `" . PSM_DB_PREFIX . "config` (`key`, `value`) VALUE
+					('proxy', '0'),
+					('proxy_url', ''),
+					('proxy_user', ''),
+					('proxy_password', '');";
 
 		$this->execSQL($queries);
 
@@ -468,5 +502,43 @@ class Installer {
 
         // Drop old user_id('s) column
         $this->execSQL("ALTER TABLE `" . PSM_DB_PREFIX . "log` DROP COLUMN `user_id`;");
+	}
+
+	/**
+	 * Upgrade for v3.2.1 release
+	 */
+	protected function upgrade321() {
+		$queries = array();
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD COLUMN `header_name` VARCHAR(255) AFTER `pattern`, ADD COLUMN `header_value` VARCHAR(255) AFTER `header_name`";
+		$this->execSQL($queries);
+	}
+
+	/**
+	 * Upgrade for v3.2.2 release
+	 */
+	protected function upgrade322() {
+		$queries = array();
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "users` ADD  `telegram_id` VARCHAR( 255 ) NOT NULL AFTER `pushover_device`;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD  `telegram` ENUM( 'yes','no' ) NOT NULL DEFAULT 'yes' AFTER  `pushover`;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "log` CHANGE `type` `type` ENUM( 'status', 'email', 'sms', 'pushover', 'telegram' ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL;";
+		$queries[] = "INSERT INTO `" . PSM_DB_PREFIX . "config` (`key`, `value`) VALUE
+					('telegram_status', '0'),
+					('log_telegram', '1'),
+					('telegram_api_token', '');";
+		$this->execSQL($queries);
+	}
+
+	/**
+	 * Upgrade for v3.3.0 release
+	 */
+	protected function upgrade330() {
+		$queries = array();
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD COLUMN `last_offline` DATETIME NULL AFTER `last_online`, ADD COLUMN `last_offline_duration` varchar(255) NULL AFTER `last_offline`;";
+		$queries[] = "ALTER TABLE `" . PSM_DB_PREFIX . "servers` ADD `pattern_online` ENUM( 'yes','no' ) NOT NULL DEFAULT 'yes' AFTER `pattern`;";
+		$this->execSQL($queries);
+		if(psm_get_conf('sms_gateway') == 'mollie'){
+			psm_update_conf('sms_gateway', 'messagebird');
+		}
+		
 	}
 }

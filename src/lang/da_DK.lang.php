@@ -19,9 +19,9 @@
  *
  * @package     phpservermon
  * @author      nerdalertdk
- * @copyright   Copyright (c) 2008-2014 Pepijn Over <pep@neanderthal-technology.com>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
- * @version     Release: v3.1.1
+ * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
  **/
 
@@ -58,6 +58,18 @@ $sm_lang = array(
 		'a_minute_ago' => 'omkring et minut siden',
 		'seconds_ago' => '%d sekunder siden',
 		'a_second_ago' => 'et sekund siden',
+		'year' => 'year',
+		'years' => 'years',
+		'month' => 'month',
+		'months' => 'months',
+		'day' => 'day',
+		'days' => 'days',
+		'hour' => 'hour',
+		'hours' => 'hours',
+		'minute' => 'minute',
+		'minutes' => 'minutes',
+		'second' => 'second',
+		'seconds' => 'seconds',
 	),
 	'menu' => array(
 		'config' => 'Indstillinger',
@@ -94,7 +106,7 @@ $sm_lang = array(
 		'profile' => 'Profil',
 		'profile_updated' => 'Din profil er opdateret.',
 		'error_user_name_bad_length' => 'Brugernavn skal være mellem 2 til 64 tegn.',
-		'error_user_name_invalid' => 'Brugernavn må kun indholde alfabetiske tegn (a-z, A-Z), tal (0-9) og (_).',
+		'error_user_name_invalid' => 'Brugernavn må kun indholde alfabetiske tegn (a-z, A-Z), tal (0-9), prikker (.) og (_).',
 		'error_user_name_exists' => 'Det valgte brugernavn findes allerede.',
 		'error_user_email_bad_length' => 'E-mail addresser skal være mellem 5 til 255 tegn.',
 		'error_user_email_invalid' => 'Den valgte e-mail er ugyldig.',
@@ -111,6 +123,9 @@ $sm_lang = array(
 		'sms' => 'SMS',
 		'pushover' => 'Pushover',
 		'no_logs' => 'Intet i loggen',
+		'clear' => 'Ryd log',
+		'delete_title' => 'Slet log',
+		'delete_message' => 'Er du sikker på, at du vil slette <b>alle</b> logfiler?',
 	),
 	'servers' => array(
 		'server' => 'Server',
@@ -127,6 +142,7 @@ $sm_lang = array(
 		'pattern_description' => 'Hvis dette mønster ikke findes på hjemmesiden, vil serveren blive markeret som værende offline. Regulære udtryk er tilladt.',
 		'last_check' => 'Sidst kontrolleret',
 		'last_online' => 'Sidst online',
+		'last_offline' => 'Sidst offline',
 		'monitoring' => 'Overvågning',
 		'no_monitoring' => 'Ingen overvågning',
 		'email' => 'E-mail',
@@ -187,16 +203,6 @@ $sm_lang = array(
 		'email_smtp_noauth' => 'Efterlad blank hvis det ikke er krævet',
 		'sms_status' => 'Tillad at sende SMS beskeder',
 		'sms_gateway' => 'SMS Gateway',
-		'sms_gateway_mosms' => 'Mosms',
-		'sms_gateway_mollie' => 'Mollie',
-		'sms_gateway_spryng' => 'Spryng',
-		'sms_gateway_inetworx' => 'Inetworx',
-		'sms_gateway_clickatell' => 'Clickatell',
-        'sms_gateway_textmarketer' => 'Textmarketer',
-		'sms_gateway_smsglobal' => 'SMSGlobal',
-		'sms_gateway_octopush' => 'Octopush',
-		'sms_gateway_smsit' => 'Smsit',
-		'sms_gateway_nexmo' => 'Nexmo',
 		'sms_gateway_username' => 'Gateway brugernavn/apikey',
 		'sms_gateway_password' => 'Gateway adgangskode',
 		'sms_from' => 'Afsenderens navn.',
@@ -248,7 +254,7 @@ $sm_lang = array(
 		'email_sent' => 'E-mail sendt',
 		'email_error' => 'Fejl ved afsendelse af e-mail',
 		'sms_sent' => 'Sms sendt',
-		'sms_error' => 'Fejl ved afsendelse af SMS',
+		'sms_error' => 'Fejl ved afsendelse af SMS. %s',
 		'sms_error_nomobile' => 'Ikke muligt at sende SMS: Intet gyldigt telefonnummer blev fundet i din profil.',
 		'pushover_sent' => 'Pushover notifikation blev sendt',
 		'pushover_error' => 'En fejl opstod under afsendelse af Pushover notifikation: %s',

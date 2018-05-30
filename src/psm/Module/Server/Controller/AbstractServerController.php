@@ -18,8 +18,8 @@
  * along with PHP Server Monitor.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @package     phpservermon
- * @author      Pepijn Over <pep@peplab.net>
- * @copyright   Copyright (c) 2008-2015 Pepijn Over <pep@peplab.net>
+ * @author      Pepijn Over <pep@mailbox.org>
+ * @copyright   Copyright (c) 2008-2017 Pepijn Over <pep@mailbox.org>
  * @license     http://www.gnu.org/licenses/gpl.txt GNU GPL v3
  * @version     Release: @package_version@
  * @link        http://www.phpservermonitor.org/
@@ -64,15 +64,21 @@ abstract class AbstractServerController extends AbstractController {
 					`s`.`type`,
 					`s`.`label`,
 					`s`.`pattern`,
+					`s`.`pattern_online`,
+					`s`.`header_name`,
+					`s`.`header_value`,
 					`s`.`status`,
 					`s`.`error`,
 					`s`.`rtime`,
 					`s`.`last_check`,
 					`s`.`last_online`,
+					`s`.`last_offline`,
+					`s`.`last_offline_duration`,
 					`s`.`active`,
 					`s`.`email`,
 					`s`.`sms`,
 					`s`.`pushover`,
+					`s`.`telegram`,
 					`s`.`warning_threshold`,
 					`s`.`warning_threshold_counter`,
 					`s`.`timeout`,
@@ -99,11 +105,17 @@ abstract class AbstractServerController extends AbstractController {
 	protected function formatServer($server) {
 		$server['rtime'] = round((float) $server['rtime'], 4);
 		$server['last_online']  = psm_timespan($server['last_online']);
+		$server['last_offline']  = psm_timespan($server['last_offline']);
+		$server['last_offline_duration'] = "";
+		if ($server['last_offline'] != psm_get_lang('system', 'never')) {
+			$server['last_offline_duration'] = "(".$server['last_offline_duration'].")";
+		}
 		$server['last_check']  = psm_timespan($server['last_check']);
 		$server['active'] = psm_get_lang('system', $server['active']);
 		$server['email'] = psm_get_lang('system', $server['email']);
 		$server['sms'] = psm_get_lang('system', $server['sms']);
 		$server['pushover'] = psm_get_lang('system', $server['pushover']);
+		$server['telegram'] = psm_get_lang('system', $server['telegram']);
 
 		if($server['status'] == 'on' && $server['warning_threshold_counter'] > 0) {
 			$server['status'] = 'warning';
